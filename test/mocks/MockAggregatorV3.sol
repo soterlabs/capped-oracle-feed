@@ -39,10 +39,6 @@ contract MockAggregatorV3 {
         return _decimals;
     }
 
-    function latestAnswer() external view returns (int256) {
-        return _latestAnswer;
-    }
-
     function latestRoundData()
         external
         view

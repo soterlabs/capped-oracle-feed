@@ -20,7 +20,8 @@ contract CappedOracleFeedTest is Test {
     // ============================================================
 
     function test_constructor() public view {
-        assertEq(oracle.latestAnswer(), 0.8e8);
+        (, int256 answer,,,) = oracle.latestRoundData();
+        assertEq(answer, 0.8e8);
         assertEq(oracle.decimals(), 8);
         assertEq(oracle.maxPrice(), 1e8);
         assertEq(address(oracle.source()), address(priceSource));
@@ -46,30 +47,6 @@ contract CappedOracleFeedTest is Test {
     function test_maxPrice_negative() public {
         vm.expectRevert(CappedOracleFeed.InvalidMaxPrice.selector);
         new CappedOracleFeed(address(priceSource), -1);
-    }
-
-    // ============================================================
-    //  latestAnswer
-    // ============================================================
-
-    function test_latestAnswer_price_at_max() public {
-        priceSource.setLatestAnswer(1e8);
-        assertEq(oracle.latestAnswer(), 1e8);
-    }
-
-    function test_latestAnswer_price_above_max() public {
-        priceSource.setLatestAnswer(1e8 + 1);
-        assertEq(oracle.latestAnswer(), 1e8);
-    }
-
-    function test_latestAnswer_price_below_max() public {
-        priceSource.setLatestAnswer(1e8 - 1);
-        assertEq(oracle.latestAnswer(), 1e8 - 1);
-    }
-
-    function test_latestAnswer_price_below_zero() public {
-        priceSource.setLatestAnswer(-1e8);
-        assertEq(oracle.latestAnswer(), -1e8);
     }
 
     // ============================================================
@@ -133,65 +110,29 @@ contract CappedOracleFeedTest is Test {
     }
 
     // ============================================================
-    //  Consistency: latestAnswer == latestRoundData.answer
-    // ============================================================
-
-    function test_consistency_below_cap() public {
-        priceSource.setLatestAnswer(0.5e8);
-        (, int256 roundAnswer,,,) = oracle.latestRoundData();
-        assertEq(oracle.latestAnswer(), roundAnswer);
-    }
-
-    function test_consistency_at_cap() public {
-        priceSource.setLatestAnswer(1e8);
-        (, int256 roundAnswer,,,) = oracle.latestRoundData();
-        assertEq(oracle.latestAnswer(), roundAnswer);
-    }
-
-    function test_consistency_above_cap() public {
-        priceSource.setLatestAnswer(1.5e8);
-        (, int256 roundAnswer,,,) = oracle.latestRoundData();
-        assertEq(oracle.latestAnswer(), roundAnswer);
-    }
-
-    function test_consistency_negative() public {
-        priceSource.setLatestAnswer(-0.5e8);
-        (, int256 roundAnswer,,,) = oracle.latestRoundData();
-        assertEq(oracle.latestAnswer(), roundAnswer);
-    }
-
-    // ============================================================
     //  Stablecoin use case: cap at $1, report actual price if below
     // ============================================================
 
     function test_stablecoin_depeg_below_cap() public {
         priceSource.setLatestAnswer(0.98e8);
-
-        assertEq(oracle.latestAnswer(), 0.98e8);
         (, int256 answer,,,) = oracle.latestRoundData();
         assertEq(answer, 0.98e8);
     }
 
     function test_stablecoin_at_cap() public {
         priceSource.setLatestAnswer(1e8);
-
-        assertEq(oracle.latestAnswer(), 1e8);
         (, int256 answer,,,) = oracle.latestRoundData();
         assertEq(answer, 1e8);
     }
 
     function test_stablecoin_slightly_above_cap() public {
         priceSource.setLatestAnswer(1.001e8);
-
-        assertEq(oracle.latestAnswer(), 1e8);
         (, int256 answer,,,) = oracle.latestRoundData();
         assertEq(answer, 1e8);
     }
 
     function test_stablecoin_severe_depeg() public {
         priceSource.setLatestAnswer(0.5e8);
-
-        assertEq(oracle.latestAnswer(), 0.5e8);
         (, int256 answer,,,) = oracle.latestRoundData();
         assertEq(answer, 0.5e8);
     }
@@ -199,12 +140,6 @@ contract CappedOracleFeedTest is Test {
     // ============================================================
     //  Fuzz tests
     // ============================================================
-
-    function testFuzz_latestAnswer_never_exceeds_max(int256 price) public {
-        priceSource.setLatestAnswer(price);
-        int256 answer = oracle.latestAnswer();
-        assertLe(answer, oracle.maxPrice());
-    }
 
     function testFuzz_latestRoundData_never_exceeds_max(int256 price) public {
         priceSource.setLatestAnswer(price);
@@ -215,24 +150,14 @@ contract CappedOracleFeedTest is Test {
     function testFuzz_preserves_source_price_when_below_max(int256 price) public {
         vm.assume(price <= 1e8);
         priceSource.setLatestAnswer(price);
-
-        assertEq(oracle.latestAnswer(), price);
-        (, int256 roundAnswer,,,) = oracle.latestRoundData();
-        assertEq(roundAnswer, price);
+        (, int256 answer,,,) = oracle.latestRoundData();
+        assertEq(answer, price);
     }
 
     function testFuzz_caps_at_max_when_above(int256 price) public {
         vm.assume(price > 1e8);
         priceSource.setLatestAnswer(price);
-
-        assertEq(oracle.latestAnswer(), 1e8);
-        (, int256 roundAnswer,,,) = oracle.latestRoundData();
-        assertEq(roundAnswer, 1e8);
-    }
-
-    function testFuzz_latestAnswer_equals_latestRoundData_answer(int256 price) public {
-        priceSource.setLatestAnswer(price);
-        (, int256 roundAnswer,,,) = oracle.latestRoundData();
-        assertEq(oracle.latestAnswer(), roundAnswer);
+        (, int256 answer,,,) = oracle.latestRoundData();
+        assertEq(answer, 1e8);
     }
 }

@@ -2,7 +2,7 @@
 
 A Chainlink-compatible oracle wrapper that enforces a maximum price cap. Reports `min(sourcePrice, maxPrice)` — if the source feed price exceeds the cap, the oracle returns the cap instead.
 
-Both `latestAnswer()` and `latestRoundData()` apply the same capping logic. All other round metadata (roundId, timestamps, answeredInRound) is passed through from the source unchanged.
+Implements a minimal subset of Chainlink's `AggregatorV3Interface` (`decimals`, `latestRoundData`). All round metadata (roundId, timestamps, answeredInRound) is passed through from the source unchanged.
 
 ## Properties
 
