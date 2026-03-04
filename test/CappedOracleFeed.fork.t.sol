@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 
 import {CappedOracleFeed} from "../src/CappedOracleFeed.sol";
-import {AggregatorV3Interface} from "../src/interfaces/AggregatorV3Interface.sol";
+import {MinAggregatorV3Interface} from "../src/interfaces/MinAggregatorV3Interface.sol";
 
 /// @dev Fork tests against mainnet USDT/USD Chainlink feed.
 ///      Run with: forge test --mc CappedOracleFeedForkTest --fork-url <RPC_URL>
@@ -23,7 +23,7 @@ contract CappedOracleFeedForkTest is Test {
 
         CappedOracleFeed oracle = new CappedOracleFeed(USDT_USD_FEED, MAX_PRICE);
 
-        (, int256 sourcePrice,,,) = AggregatorV3Interface(USDT_USD_FEED).latestRoundData();
+        (, int256 sourcePrice,,,) = MinAggregatorV3Interface(USDT_USD_FEED).latestRoundData();
         (, int256 cappedPrice,,,) = oracle.latestRoundData();
 
         assertLt(sourcePrice, MAX_PRICE, "source price should be below cap");
@@ -35,7 +35,7 @@ contract CappedOracleFeedForkTest is Test {
 
         CappedOracleFeed oracle = new CappedOracleFeed(USDT_USD_FEED, MAX_PRICE);
 
-        (, int256 sourcePrice,,,) = AggregatorV3Interface(USDT_USD_FEED).latestRoundData();
+        (, int256 sourcePrice,,,) = MinAggregatorV3Interface(USDT_USD_FEED).latestRoundData();
         (, int256 cappedPrice,,,) = oracle.latestRoundData();
 
         assertGt(sourcePrice, MAX_PRICE, "source price should be above cap");
@@ -48,7 +48,7 @@ contract CappedOracleFeedForkTest is Test {
         CappedOracleFeed oracle = new CappedOracleFeed(USDT_USD_FEED, MAX_PRICE);
 
         (uint80 srcRoundId,, uint256 srcStartedAt, uint256 srcUpdatedAt, uint80 srcAnsweredInRound) =
-            AggregatorV3Interface(USDT_USD_FEED).latestRoundData();
+            MinAggregatorV3Interface(USDT_USD_FEED).latestRoundData();
         (uint80 roundId, int256 cappedPrice, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) =
             oracle.latestRoundData();
 

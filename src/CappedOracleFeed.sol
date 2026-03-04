@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.28;
 
-import {AggregatorV3Interface} from "./interfaces/AggregatorV3Interface.sol";
+import {MinAggregatorV3Interface} from "./interfaces/MinAggregatorV3Interface.sol";
 
 /**
  * @title  CappedOracleFeed
@@ -9,7 +9,7 @@ import {AggregatorV3Interface} from "./interfaces/AggregatorV3Interface.sol";
  * @dev    Wraps an existing Chainlink price feed and ensures the reported price
  *         never exceeds `maxPrice`.
  *
- *         Implements a minimal subset of AggregatorV3Interface (decimals, latestRoundData).
+ *         Implements MinAggregatorV3Interface (decimals, latestRoundData).
  *         Methods like description(), version(), and getRoundData() are intentionally omitted.
  *
  *         Decimals are validated against the source at deployment and assumed stable
@@ -17,20 +17,20 @@ import {AggregatorV3Interface} from "./interfaces/AggregatorV3Interface.sol";
  *         Both `source` and `maxPrice` are immutable — once deployed, the cap cannot
  *         be changed.
  */
-contract CappedOracleFeed is AggregatorV3Interface {
+contract CappedOracleFeed is MinAggregatorV3Interface {
     error InvalidSource();
     error InvalidDecimals();
     error InvalidMaxPrice();
 
-    AggregatorV3Interface public immutable source;
+    MinAggregatorV3Interface public immutable source;
     int256 public immutable maxPrice;
 
     constructor(address _source, int256 _maxPrice) {
         if (_source == address(0)) revert InvalidSource();
-        if (AggregatorV3Interface(_source).decimals() != 8) revert InvalidDecimals();
+        if (MinAggregatorV3Interface(_source).decimals() != 8) revert InvalidDecimals();
         if (_maxPrice <= 0) revert InvalidMaxPrice();
 
-        source = AggregatorV3Interface(_source);
+        source = MinAggregatorV3Interface(_source);
         maxPrice = _maxPrice;
     }
 

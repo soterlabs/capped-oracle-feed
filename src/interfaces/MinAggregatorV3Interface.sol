@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 /// @notice Minimal subset of Chainlink's AggregatorV3Interface.
-///         See https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol
-interface AggregatorV3Interface {
+///         See https://github.com/smartcontractkit/chainlink-local/blob/main/src/data-feeds/interfaces/AggregatorV3Interface.sol
+interface MinAggregatorV3Interface {
     function decimals() external view returns (uint8);
 
     function latestRoundData()
